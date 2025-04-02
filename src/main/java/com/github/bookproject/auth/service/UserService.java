@@ -33,9 +33,11 @@ public class UserService {
 
     public void createUser(JoinRequestDTO dto, MultipartFile profileImage){
 
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
         String profileImageUrl = null;
-
-
         try{
             profileImageUrl = saveProfileImage(profileImage);
         } catch (IOException e) {
