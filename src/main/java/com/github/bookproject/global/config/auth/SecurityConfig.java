@@ -39,6 +39,7 @@ public class SecurityConfig {
     @Bean
     // HttpSecurity 객체 사용해서 보안 관련 설정하는 메서드
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        System.out.println("✅ filterChain 실행됨");
 
         http
                 .csrf((auth) -> auth.disable());    // csrf 비활성화

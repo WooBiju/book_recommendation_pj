@@ -41,3 +41,6 @@ out/
 /src/main/resources/application.yml
 .DS_Store
 
+# Python venv
+recommend-server/.venv/
+recommend-server/__pycache__/
