@@ -27,6 +27,7 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String uri = request.getRequestURI();
+        log.info("📌 요청 URI: {}", uri);
 
         if (uri.startsWith("/login/kakao")) {
             filterChain.doFilter(request, response);
