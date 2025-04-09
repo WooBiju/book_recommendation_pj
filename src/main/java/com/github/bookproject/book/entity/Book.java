@@ -34,10 +34,14 @@ public class Book {
     private int pageCount;              // 페이지 수
     private Year publishedYear;          // 출판년도
 
+    @Column(nullable = false)
     private double rating;              // 평균 평점
 
     @Enumerated(EnumType.STRING)
     private BookStatus status;          // 상태
+
+    @Version
+    private Long version;
 
 
     public void update(BookUpdateDTO dto) {
@@ -48,6 +52,7 @@ public class Book {
     }
 
 
-
-
+    public void updateRating(double avgRating) {
+        this.rating = avgRating;
+    }
 }
