@@ -12,7 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 public class RecommendRequestDTO {
     private List<String> preferredGenres;
-    private List<Long> favoriteBookIds;
+    private List<Integer> favoriteBooks;
+    private List<RatedBookDTO> ratedBooks;
     private List<BookInfoDTO> bookInfos;
 
     @Getter
@@ -22,6 +23,15 @@ public class RecommendRequestDTO {
     public static class BookInfoDTO {
         private Long id;
         private String genre;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RatedBookDTO {
+        private Long id;
+        private double rating;
     }
 
 }

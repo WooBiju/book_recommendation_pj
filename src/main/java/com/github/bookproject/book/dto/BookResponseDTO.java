@@ -18,7 +18,7 @@ public class BookResponseDTO {
     private String author;
     private String imageUrl;
     private GenreType genre;
-    private Double rating;
+    private double rating;
     private BookStatus status;
 
     public static BookResponseDTO from(Book book) {

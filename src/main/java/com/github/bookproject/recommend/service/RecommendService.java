@@ -10,6 +10,7 @@ import com.github.bookproject.global.exception.AppException;
 import com.github.bookproject.global.exception.ErrorCode;
 import com.github.bookproject.recommend.dto.RecommendRequestDTO;
 import com.github.bookproject.recommend.dto.RecommendResultDTO;
+import com.github.bookproject.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -29,30 +30,46 @@ public class RecommendService {
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
     private final FavoriteRepository favoriteRepository;
+    private final ReviewRepository reviewRepository;
 
     public List<BookResponseDTO> getRecommendedBooks(Long userId) {
-        // 1. 사용자 선호 장르 조회
+        // 1. 사용자 정보, 선호 장르 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        // 2. 선호 장르 추출
         List<String> preferredGenres = user.getPreferredGenres().stream()
                 .map(Enum::name)
                 .collect(Collectors.toList());
 
-        // 3. 찜 도서 ID 조회
-        List<Long> favoriteBookIds = favoriteRepository.findByUserId(userId).stream()
-                .map(fav ->fav.getBook().getId())
+        // 2. 찜 도서 ID 리스트
+        List<Integer> favoriteBooks = favoriteRepository.findByUserId(userId).stream()
+                .map(fav -> fav.getBook().getId().intValue())
                 .collect(Collectors.toList());
 
-        // 4. db 에 있는 전체 도서 목록 dto 에 리스트로 담아서 저장
+        // 3. 별점 남긴 도서 리스트
+        List<RecommendRequestDTO.RatedBookDTO> ratedBooks = reviewRepository.findByUserId(userId).stream()
+                .map(review -> new RecommendRequestDTO.RatedBookDTO(
+                     review.getBook().getId(),
+                        review.getRating()
+                ))
+                .collect(Collectors.toList());
+
+
+        // 4. 전체 도서 목록
         List<Book> allBooks = bookRepository.findAll();
         List<RecommendRequestDTO.BookInfoDTO> bookInfos = allBooks.stream()
-                .map(book -> new RecommendRequestDTO.BookInfoDTO(book.getId(),book.getGenre().name()))
+                .map(book -> new RecommendRequestDTO.BookInfoDTO(
+                        book.getId(),
+                        book.getGenre().name()
+                        ))
                 .collect(Collectors.toList());
 
         // 5. 파이썬 서버에 요청
-        RecommendRequestDTO requestDTO = new RecommendRequestDTO(preferredGenres,favoriteBookIds,bookInfos);
+        RecommendRequestDTO requestDTO = new RecommendRequestDTO(
+                preferredGenres,
+                favoriteBooks,
+                ratedBooks,
+                bookInfos);
         String pythonUrl = "http://127.0.0.1:5000/recommend";
 
         HttpHeaders headers = new HttpHeaders();
@@ -65,7 +82,7 @@ public class RecommendService {
 
         List<Long> recommendBookIds = response.getBody().getBookIds();
 
-        // 6. 도서 ID 들로 book 조회
+        // 6. 추천 도서 조회
         List<Book> books = bookRepository.findAllById(recommendBookIds);
 
         // 7. dto 로 변환
