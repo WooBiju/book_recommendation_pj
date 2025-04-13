@@ -1,7 +1,7 @@
 package com.github.bookproject.readingRecord.entity;
 
 public enum ReadingStatus {
-    WISHLIST,   // 읽고 싶은 책
+    NOT_STARTED,   // 시작 전
     READING,    // 읽는 중
-    COMPLETED   // 읽음
+    COMPLETED   // 독서 완료
 }
