@@ -34,8 +34,9 @@ public class BookDetailsResponseDTO {
     private double rating;
     private BookStatus status;
     private List<ReviewResponseDTO> reviews;
+    private boolean isReading;
 
-    public static BookDetailsResponseDTO from(Book book,List<ReviewResponseDTO> reviews) {
+    public static BookDetailsResponseDTO from(Book book,List<ReviewResponseDTO> reviews,boolean isReading) {
         return BookDetailsResponseDTO.builder()
                 .id(book.getId())
                 .title(book.getTitle())
@@ -50,6 +51,7 @@ public class BookDetailsResponseDTO {
                 .rating(book.getRating())
                 .status(book.getStatus())
                 .reviews(reviews)
+                .isReading(isReading)
                 .build();
     }
 }

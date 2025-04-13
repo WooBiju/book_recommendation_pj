@@ -4,6 +4,7 @@ import com.github.bookproject.auth.entity.GenreType;
 import com.github.bookproject.book.dto.BookDetailsResponseDTO;
 import com.github.bookproject.book.dto.BookResponseDTO;
 import com.github.bookproject.book.service.BookService;
+import com.github.bookproject.global.config.auth.custom.CustomUserDetails;
 import com.github.bookproject.global.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -31,8 +33,11 @@ public class BookController {
 
     @Operation(summary = "도서 상세 조회")
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<BookDetailsResponseDTO>> getBookDetails(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(bookService.getBookDetail(id)));
+    public ResponseEntity<ApiResponse<BookDetailsResponseDTO>> getBookDetails(@PathVariable Long id,
+                                                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        BookDetailsResponseDTO dto = bookService.getBookDetail(id,userId);
+        return ResponseEntity.ok(ApiResponse.success(dto));
     }
 
     @Operation(summary = "도서 검색")
