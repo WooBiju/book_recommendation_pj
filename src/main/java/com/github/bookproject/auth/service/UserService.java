@@ -6,6 +6,7 @@ import com.github.bookproject.auth.entity.User;
 import com.github.bookproject.auth.repository.UserRepository;
 import com.github.bookproject.global.exception.AppException;
 import com.github.bookproject.global.exception.ErrorCode;
+import com.github.bookproject.global.util.ImageFileUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,15 +18,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-
-    @Value("${user.profile-image-dir}")
-    private String profileImageDir;
+    private final ImageFileUtils imageFileUtils;
 
     public boolean checkEmail(String email) {
         return userRepository.findByEmail(email).isPresent();
@@ -39,7 +39,7 @@ public class UserService {
 
         String profileImageUrl = null;
         try{
-            profileImageUrl = saveProfileImage(profileImage);
+            profileImageUrl = imageFileUtils.saveProfileImage(profileImage);
         } catch (IOException e) {
             throw new AppException(ErrorCode.IO_ERROR);
         }
@@ -61,31 +61,6 @@ public class UserService {
     // 비밀번호 암호화
     private String encodePassword(String password) {
         return new BCryptPasswordEncoder().encode(password);
-    }
-
-    // 프로필 이미지 저장 메서드 (로컬)
-    private String saveProfileImage(MultipartFile profileImage) throws IOException {
-        if (profileImage == null || profileImage.isEmpty()) {
-            return null;
-        }
-
-        String originalFilename = profileImage.getOriginalFilename();
-        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String fileName = System.currentTimeMillis() + fileExtension; // 햔재 시간 기준으로 파일명 생성
-
-        Path path = Paths.get(profileImageDir, fileName);  // 파일 경로
-
-        try {
-            Files.createDirectories(path.getParent());  // 부모 디렉토리 생성
-            profileImage.transferTo(path.toFile());     // 실제 파일을 로컬 경로에 저장
-
-        } catch (IOException e) {
-            throw new IOException(e.getMessage());
-
-        }
-
-        return "/image/profiles/" + fileName;
-
     }
 
     @Transactional
