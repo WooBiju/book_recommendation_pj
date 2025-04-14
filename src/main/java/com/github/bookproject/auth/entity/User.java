@@ -3,6 +3,7 @@ package com.github.bookproject.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,4 +50,23 @@ public class User {
                 .role(role)
                 .build();
     }
+
+    public void updateProfile(String username, String phoneNumber) {
+        if (StringUtils.hasText(username)) this.username = username;
+        if (StringUtils.hasText(phoneNumber)) this.phone = phoneNumber;
+    }
+
+    public void updateProfileImage(String profileImageUrl) {
+        if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
+    }
+
+    public void changePassword(String newPassword) {
+        this.password = newPassword;
+    }
+
+    public void updatePreferredGenres(List<GenreType> preferredGenres) {
+        this.preferredGenres.clear();
+        this.preferredGenres.addAll(preferredGenres);
+    }
+
 }
