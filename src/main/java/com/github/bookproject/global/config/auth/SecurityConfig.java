@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .httpBasic((auth) -> auth.disable());   // http 기본 인증 비활성화
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/","/join","/check-email","/login/**").permitAll()  // 모든 사용자
+                        .requestMatchers("/","/join","/check-email","/login/**","/swagger-ui/**","/v3/api-docs/**").permitAll()  // 모든 사용자
                         .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated());  // 인증된 사용자
