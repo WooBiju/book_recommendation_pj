@@ -32,10 +32,17 @@ class RatedBookDTO(BaseModel):
     id: int
     rating: float
 
+class ReadingHistoryDTO(BaseModel):
+    id: int
+    genre : str
+    progress : float
+    status : str
+
 class RecommendRequestDTO(BaseModel):
     preferredGenres: List[str]  # 유저의 선호 장르 리스트
     favoriteBooks: List[int]  # 유저의 찜 목록 리스트
     ratedBooks: List[RatedBookDTO] # 유저의 별점 목록 리스트
+    readingHistory: List[ReadingHistoryDTO]  # 유저의 독서 기록 리스트
     bookInfos: List[BookInfoDTO]
 
 # 응답 DTO
@@ -47,7 +54,7 @@ def genre_to_vector(genre: str) -> List[int]:
     return [1 if genre.upper() == g else 0 for g in ALL_GENRES]
 
 # 사용자 벡터 생성 : 선호 장르 + 찜 도서 장르 , 별점 4.0 이상 가중치 평균
-def build_user_vector(preferredGenres, favoriteBooks, ratedBooks, bookInfos ) -> np.ndarray:
+def build_user_vector(preferredGenres, favoriteBooks, ratedBooks, readingHistory, bookInfos )-> np.ndarray:
 
     genre_vectors:List[np.ndarray] = [np.array(genre_to_vector(g)) for g in preferredGenres]  # 장르 벡터 변환
 
@@ -69,8 +76,17 @@ def build_user_vector(preferredGenres, favoriteBooks, ratedBooks, bookInfos ) ->
             weight = get_rating_weight(rated.rating)
             genre_vectors.append(vec * weight)
 
+    # 독서 기록 반영
+    for read in readingHistory:
+        vec = np.array(genre_to_vector(read.genre))
+        if read.status.upper() == "READING":
+            genre_vectors.append(vec * 1.1)
+        elif read.status.upper() == "COMPLETED":
+            genre_vectors.append(vec * 1.3)
+
     if not genre_vectors:
         return np.zeros((1,len(ALL_GENRES)))
+
     return np.mean(genre_vectors,axis=0).reshape(1,-1)
 
 # 모든 도서 벡터화
@@ -100,7 +116,7 @@ def recommend(request: RecommendRequestDTO):
     print(f"찜 도서: {request.favoriteBooks}")
     print(f"전체 도서 수: {len(request.bookInfos)}")
 
-    user_vector = build_user_vector(request.preferredGenres,request.favoriteBooks,request.ratedBooks,request.bookInfos)
+    user_vector = build_user_vector(request.preferredGenres,request.favoriteBooks,request.ratedBooks,request.readingHistory,request.bookInfos)
     book_vectors = build_book_vectors(request.bookInfos)
 
     scores = []
