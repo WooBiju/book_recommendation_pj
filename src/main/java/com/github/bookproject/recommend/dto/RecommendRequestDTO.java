@@ -15,6 +15,7 @@ public class RecommendRequestDTO {
     private List<Integer> favoriteBooks;
     private List<RatedBookDTO> ratedBooks;
     private List<BookInfoDTO> bookInfos;
+    private List<ReadingHistoryDTO> readingHistory;
 
     @Getter
     @Setter
@@ -32,6 +33,17 @@ public class RecommendRequestDTO {
     public static class RatedBookDTO {
         private Long id;
         private double rating;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReadingHistoryDTO {
+        private Long id;
+        private String genre;
+        private float progress;
+        private String status;
     }
 
 }
