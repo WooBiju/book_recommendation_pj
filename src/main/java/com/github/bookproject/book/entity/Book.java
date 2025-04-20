@@ -41,7 +41,7 @@ public class Book {
     private BookStatus status;          // 상태
 
     @Version
-    private Long version;
+    private long version;
 
 
     public void update(BookUpdateDTO dto) {
