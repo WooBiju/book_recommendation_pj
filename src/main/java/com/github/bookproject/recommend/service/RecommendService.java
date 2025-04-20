@@ -112,7 +112,9 @@ public class RecommendService {
                 .map(review -> new ReviewForKeywordDTO(
                         review.getId(),
                         review.getBook().getId(),
-                        review.getContent()
+                        review.getContent(),
+                        review.getRating(),
+                        review.getCreatedAt()
                 ))
                 .collect(Collectors.toList());
 
