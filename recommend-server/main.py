@@ -1,12 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict
+from datetime import datetime
 from sklearn.metrics.pairwise import cosine_similarity  # 두 벡터의 유사도를 계산하는 함수
 from fastapi.middleware.cors import CORSMiddleware  # CORS 설정
 from sklearn.feature_extraction.text import TfidfVectorizer # 텍스트 데이터를 숫자로 바꾸는 키워드 추출기
 from konlpy.tag import Okt  # 한국어 형태소 분석기
 import numpy as np  # 벡터 연산, 정렬 등 수치 계산
-from numpy import isnan
 
 
 
@@ -29,7 +29,7 @@ app.add_middleware(
 KOREAN_STOPWORDS = {
     "리뷰", "작성", "합니다", "책", "내용", "이야기", "정말", "너무",
     "그냥", "조금", "것", "때", "나", "을", "를", "은", "는", "이", "가",
-    "하다", "되다", "읽다", "읽었", "있다", "없다", "한번", "꼭", "라면"
+    "하다", "되다", "읽다", "읽었", "있다", "없다", "한번", "꼭", "라면", "위해"
 }
 
 # 전체 장르 목록
@@ -54,6 +54,8 @@ class ReviewForKeywordDTO(BaseModel):
     reviewId: int
     bookId: int
     content: str
+    rating: float
+    createdAt: datetime
 
 class BookForKeywordDTO(BaseModel):
     bookId: int
@@ -162,14 +164,43 @@ def extract_korean_nouns(text: str) -> str:
     print(f"[불용어 제거 후] {filtered}")
     return ' '.join(filtered)  # 공백 구분된 형태로 반환
 
+# 날짜 기반 가중치 계산 함수
+def get_date_weight(created_at: datetime, base_date: datetime = None) -> float:
+    if not base_date:
+        base_date = datetime.now()
+    days_diff = (base_date - created_at).days
+    if days_diff < 7:
+        return 1.5
+    elif days_diff < 15:
+        return 1.3
+    elif days_diff < 30:
+        return 1.1
+    elif days_diff < 60:
+        return 0.9
+    else:
+        return 0.7
+
 @app.post("/recommend/keywords")
 def recommend_by_keywords(reviews: List[ReviewForKeywordDTO], books: List[BookForKeywordDTO]):
         if not reviews:
             raise HTTPException(status_code=400, detail="리뷰 개수가 부족합니다.")
 
-        # 1. 사용자 리뷰 키워드 누적
-        user_text = " ".join([extract_korean_nouns(r.content) for r in reviews])
-        print(f"[사용자 리뷰 전체 키워드] {user_text}")
+        print(f"✅ 리뷰 기반 추천 시작 (총 리뷰 수: {len(reviews)})")
+
+        # 1. 사용자 리뷰 키워드 누적 (별점 4.0 이상만 사용 + 날짜 기반 가중치 적용)
+        filtered_reviews = [r for r in reviews if r.rating >= 4.0]
+        print(f"✅ 별점 4.0 이상 리뷰 수: {len(filtered_reviews)}")
+
+        base_date = datetime.now()
+        weight_contents = []
+
+        for r in filtered_reviews:
+            weight = get_date_weight(r.createdAt, base_date)
+            content = extract_korean_nouns(r.content)
+            weight_contents.append((content + " ") * int(weight * 2))
+
+        user_text = " ".join(weight_contents)
+        print(f"[사용자 리뷰 키워드] {user_text}")
 
         # 2. 각 도서 설명에서 키워드 추출
         book_ids = []
@@ -203,3 +234,9 @@ def recommend_by_keywords(reviews: List[ReviewForKeywordDTO], books: List[BookFo
 
         print(f"[추천 도서 ID] {recommend_book_ids}")
         return {"bookIds" : recommend_book_ids}
+
+
+
+
+
+

@@ -8,6 +8,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -32,5 +35,12 @@ public class BookResponseDTO {
                 .status(book.getStatus())
                 .build();
     }
+
+    public double getRating() {
+        return BigDecimal.valueOf(rating)
+                .setScale(1, RoundingMode.HALF_UP)
+                .doubleValue();
+    }
+
 
 }
