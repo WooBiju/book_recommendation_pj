@@ -14,6 +14,7 @@ public enum ErrorCode {
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED,"로그인에 실패했습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 유저를 찾을 수 없습니다."),
     INVALID_FILE_NAME(HttpStatus.BAD_REQUEST,"유효하지 않은 파일 이름입니다."),
+    INVALID_TOKEN(HttpStatus.BAD_REQUEST,"유효하지 않은 토큰입니다."),
 
     // book
     BOOK_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 도서를 찾을 수 없습니다."),

@@ -114,4 +114,14 @@ public class JwtTokenProvider {
             return null;
         }
     }
+
+    public long getRemainingExpiration(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretkey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getExpiration().getTime() - System.currentTimeMillis();
+    }
 }
