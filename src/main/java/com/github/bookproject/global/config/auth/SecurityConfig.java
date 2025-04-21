@@ -2,6 +2,7 @@ package com.github.bookproject.global.config.auth;
 
 import com.github.bookproject.global.config.auth.filter.JwtFilter;
 import com.github.bookproject.global.config.auth.filter.LoginFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,11 +49,29 @@ public class SecurityConfig {
         http
                 .httpBasic((auth) -> auth.disable());   // http 기본 인증 비활성화
         http
+                .logout((auth) -> auth.disable());  // 기본 로그아웃폼 비활성화
+        http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/","/join","/check-email","/login/**","/swagger-ui/**","/v3/api-docs/**").permitAll()  // 모든 사용자
-                        .requestMatchers("/api/**").authenticated()
+                        .requestMatchers("/api/**","/logout").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated());  // 인증된 사용자
+                        .anyRequest().authenticated())  // 인증된 사용자
+                // 예외처리 추가 (리다이렉트)
+                .exceptionHandling((exception) -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.getWriter().write("{\"message\": \"인증이 필요합니다.\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.getWriter().write("{\"message\": \"접근 권한이 없습니다.\"}");
+                        })
+
+                );
         http
                 .addFilterBefore(jwtFilter,UsernamePasswordAuthenticationFilter.class);
 

@@ -71,5 +71,13 @@ public class UserController {
         userService.deleteUser(userId);
         return ResponseEntity.ok(ApiResponse.success("✅탈퇴처리 되었습니다."));
     }
+
+    @Operation(summary = "로그아웃")
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(@RequestHeader("Authorization") String token) {
+        userService.logout(token);
+        return ResponseEntity.ok(ApiResponse.success("✅로그아웃 되었습니다."));
+
+    }
 }
 

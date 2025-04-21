@@ -4,6 +4,8 @@ import com.github.bookproject.auth.dto.JoinRequestDTO;
 import com.github.bookproject.auth.entity.Role;
 import com.github.bookproject.auth.entity.User;
 import com.github.bookproject.auth.repository.UserRepository;
+import com.github.bookproject.global.config.auth.JwtTokenProvider;
+import com.github.bookproject.global.config.auth.redis.RedisService;
 import com.github.bookproject.global.exception.AppException;
 import com.github.bookproject.global.exception.ErrorCode;
 import com.github.bookproject.global.util.ImageFileUtils;
@@ -26,6 +28,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ImageFileUtils imageFileUtils;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final RedisService redisService;
 
     public boolean checkEmail(String email) {
         return userRepository.findByEmail(email).isPresent();
@@ -69,5 +73,20 @@ public class UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         userRepository.delete(user);
+    }
+
+    public void logout(String token) {
+        // 1. 토큰 Barer 제거
+        String jwt = token.replace("Bearer ", "");
+
+        // 2. 토큰 유효성 검사
+        if (!jwtTokenProvider.validateToken(jwt)) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
+
+        // 3. 토큰 남은 만료 시간 계산
+        long remaining = jwtTokenProvider.getRemainingExpiration(jwt);
+
+        redisService.setBlacklistToken(jwt, remaining);
     }
 }
