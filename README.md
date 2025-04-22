@@ -10,7 +10,7 @@ Java,Spring Boot,IntelliJ,Gradle,MySQL,Redis,Swagger,EC2/Docker(예정)
 
 
 ## 📄ERD / API 명세
-- [ERD 링크]
+- [ERD 링크] (https://dbdiagram.io/d/680787b21ca52373f5e25fb9)
 - [Swagger API 문서] (http://localhost:8080/swagger-ui/index.html) 추후 배포 서버로 변경 예정
 
 ## 🗂️주요 기능
